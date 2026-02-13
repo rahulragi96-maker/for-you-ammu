@@ -29,11 +29,9 @@ body {
 }
 
 .container {
-    width: 100%;
     max-width: 600px;
-    position: relative;
-    z-index: 2;
     padding: 20px;
+    z-index: 2;
 }
 
 h1 {
@@ -87,6 +85,38 @@ button {
     to { transform: translateX(-50%) scale(1); opacity: 1; }
 }
 
+/* Final Screen */
+.final-screen {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+    color: white;
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    padding: 20px;
+    text-align: center;
+    z-index: 3;
+}
+
+/* Floating Image */
+.floating-image {
+    position: fixed;
+    width: 220px;
+    opacity: 0.25;
+    z-index: 1;
+    animation: floatAround 20s linear infinite alternate;
+}
+
+@keyframes floatAround {
+    0%   { top: 10%; left: 10%; transform: rotate(0deg); }
+    25%  { top: 60%; left: 70%; transform: rotate(90deg); }
+    50%  { top: 30%; left: 40%; transform: rotate(180deg); }
+    75%  { top: 70%; left: 20%; transform: rotate(270deg); }
+    100% { top: 20%; left: 80%; transform: rotate(360deg); }
+}
+
 /* Sparkles */
 .sparkle {
     position: absolute;
@@ -113,38 +143,6 @@ button {
 @keyframes floatUp {
     0% { transform: translateY(100vh) scale(0.6); opacity: 1; }
     100% { transform: translateY(-10vh) scale(1.4); opacity: 0; }
-}
-
-/* Final Screen */
-.final-screen {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: linear-gradient(135deg, #ff9a9e, #fad0c4);
-    color: white;
-    font-size: clamp(1.5rem, 4vw, 2.5rem);
-    padding: 20px;
-    text-align: center;
-    z-index: 3;
-}
-
-/* Floating image */
-.floating-image {
-    position: fixed;
-    width: 220px;
-    opacity: 0.25;
-    z-index: 1;
-    animation: floatAround 20s linear infinite alternate;
-}
-
-@keyframes floatAround {
-    0%   { top: 10%; left: 10%; transform: rotate(0deg); }
-    25%  { top: 60%; left: 70%; transform: rotate(90deg); }
-    50%  { top: 30%; left: 40%; transform: rotate(180deg); }
-    75%  { top: 70%; left: 20%; transform: rotate(270deg); }
-    100% { top: 20%; left: 80%; transform: rotate(360deg); }
 }
 </style>
 </head>
@@ -173,13 +171,14 @@ const popSound = document.getElementById("popSound");
 let scaleYes = 1;
 let scaleNo = 1;
 
-/* Start music on first tap */
+/* Start background music on first tap */
 document.addEventListener("click", () => {
     bgMusic.play();
 }, { once: true });
 
 /* NO impossible to touch */
 function escapeNo() {
+    popSound.currentTime = 0;
     popSound.play();
 
     scaleYes += 0.15;
@@ -188,12 +187,10 @@ function escapeNo() {
     yesBtn.style.transform = `scale(${scaleYes})`;
     noBtn.style.transform = `scale(${scaleNo})`;
 
-    // Move NO randomly
     noBtn.style.position = "absolute";
     noBtn.style.left = Math.random() * (window.innerWidth - 100) + "px";
     noBtn.style.top = Math.random() * (window.innerHeight - 50) + "px";
 
-    // Fake popup
     const popup = document.createElement("div");
     popup.className = "popup";
     popup.innerText = "Are you sure? 😏";
@@ -214,24 +211,31 @@ yesBtn.addEventListener("click", () => {
 
     if (navigator.vibrate) navigator.vibrate([200,100,200]);
 
+    drumroll.currentTime = 0;
     drumroll.play();
 
-    setTimeout(() => {
+    bgMusic.volume = 0.3;
 
+    document.querySelector(".container").style.display = "none";
+
+    const finalScreen = document.createElement("div");
+    finalScreen.className = "final-screen";
+    finalScreen.innerHTML =
+        "You just made me the happiest person alive, Ammu 💘✨";
+    document.body.appendChild(finalScreen);
+
+    const img = document.createElement("img");
+    img.src = "love.png";
+    img.className = "floating-image";
+    document.body.appendChild(img);
+
+    setTimeout(() => {
         confetti({
             particleCount: 400,
             spread: 180,
             origin: { y: 0.6 }
         });
-
-        document.body.innerHTML = `
-            <div class="final-screen">
-                You just made me the happiest person alive, Ammu 💘✨
-            </div>
-            <img src="love.png" class="floating-image">
-        `;
-
-    }, 2000);
+    }, 300);
 });
 
 /* Sparkles */
@@ -249,7 +253,7 @@ function createSparkle(e) {
     setTimeout(() => sparkle.remove(), 600);
 }
 
-/* Floating hearts */
+/* Floating Hearts */
 setInterval(() => {
     const heart = document.createElement("div");
     heart.className = "heart";
