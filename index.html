@@ -6,6 +6,10 @@
 <title>For Ammu 💖</title>
 
 <style>
+* {
+    box-sizing: border-box;
+}
+
 body {
     margin: 0;
     height: 100vh;
@@ -14,9 +18,11 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    text-align: center;
     background: linear-gradient(135deg, #ff9a9e, #fad0c4, #fbc2eb, #a18cd1);
     background-size: 400% 400%;
     animation: gradientBG 10s ease infinite;
+    padding: 20px;
 }
 
 @keyframes gradientBG {
@@ -26,24 +32,26 @@ body {
 }
 
 .container {
-    text-align: center;
-    z-index: 2;
+    width: 100%;
+    max-width: 500px;
 }
 
 h1 {
-    font-size: 3rem;
+    font-size: 2rem;
     color: white;
     text-shadow: 2px 2px 10px #ff4da6;
+    margin-bottom: 30px;
 }
 
 button {
-    padding: 15px 30px;
-    font-size: 1.2rem;
-    margin: 20px;
+    padding: 14px 24px;
+    font-size: 1rem;
+    margin: 10px;
     border: none;
     border-radius: 30px;
     cursor: pointer;
     transition: 0.3s;
+    min-width: 120px;
 }
 
 #yesBtn {
@@ -51,8 +59,8 @@ button {
     color: white;
 }
 
-#yesBtn:hover {
-    transform: scale(1.2);
+#yesBtn:active {
+    transform: scale(1.1);
 }
 
 #noBtn {
@@ -64,12 +72,12 @@ button {
 /* Sparkles */
 .sparkle {
     position: absolute;
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
     background: white;
     border-radius: 50%;
     pointer-events: none;
-    animation: sparkleFade 0.8s linear forwards;
+    animation: sparkleFade 0.6s linear forwards;
 }
 
 @keyframes sparkleFade {
@@ -81,7 +89,6 @@ button {
 .heart {
     position: absolute;
     color: rgba(255,255,255,0.8);
-    font-size: 20px;
     animation: floatUp 6s linear infinite;
 }
 
@@ -89,71 +96,73 @@ button {
     0% { transform: translateY(100vh) scale(0.5); opacity: 1; }
     100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
 }
+
+/* Final Screen */
+.final-screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 20px;
+    text-align: center;
+    background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+    color: white;
+    font-size: 1.6rem;
+}
 </style>
 </head>
 
 <body>
 
-<!-- Background Music -->
-<audio autoplay loop>
-    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
-</audio>
-
 <div class="container">
-    <h1>Will you be my Valentine? 💖</h1>
-    <button id="yesBtn" onclick="accepted()">YES 💕</button>
+    <h1>Will you be my Valentine ? 💖</h1>
+    <button id="yesBtn">YES 💕</button>
     <button id="noBtn">NO 🙈</button>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <script>
-// NO Button Run Away
 const noBtn = document.getElementById("noBtn");
-noBtn.addEventListener("mouseover", () => {
-    const x = Math.random() * (window.innerWidth - 100);
-    const y = Math.random() * (window.innerHeight - 50);
+
+function moveNoButton() {
+    const x = Math.random() * (window.innerWidth - 120);
+    const y = Math.random() * (window.innerHeight - 60);
     noBtn.style.left = x + "px";
     noBtn.style.top = y + "px";
-});
+}
 
-// YES Click Action
-function accepted() {
+noBtn.addEventListener("mouseover", moveNoButton);
+noBtn.addEventListener("touchstart", moveNoButton);
+
+document.getElementById("yesBtn").addEventListener("click", () => {
     confetti({
-        particleCount: 200,
-        spread: 120,
+        particleCount: 250,
+        spread: 150,
         origin: { y: 0.6 }
     });
 
-    document.body.innerHTML = `
-        <div style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:cursive;background:linear-gradient(135deg,#ff9a9e,#fad0c4);color:white;text-align:center;">
-            <h1>You just made me the happiest person alive, Ammu 💘✨</h1>
-        </div>
-    `;
-}
-
-// Sparkle Cursor
-document.addEventListener("mousemove", function(e) {
-    const sparkle = document.createElement("div");
-    sparkle.className = "sparkle";
-    sparkle.style.left = e.pageX + "px";
-    sparkle.style.top = e.pageY + "px";
-    document.body.appendChild(sparkle);
-    setTimeout(() => sparkle.remove(), 800);
+    setTimeout(() => {
+        document.body.innerHTML = `
+            <div class="final-screen">
+                You just made me the happiest person alive, Ammu 💘✨
+            </div>
+        `;
+    }, 1000);
 });
 
-// Floating Hearts Generator
-setInterval(() => {
-    const heart = document.createElement("div");
-    heart.className = "heart";
-    heart.innerHTML = "💖";
-    heart.style.left = Math.random() * 100 + "vw";
-    heart.style.fontSize = (Math.random() * 20 + 10) + "px";
-    heart.style.animationDuration = (Math.random() * 3 + 3) + "s";
-    document.body.appendChild(heart);
-    setTimeout(() => heart.remove(), 6000);
-}, 500);
-</script>
+// Sparkles
+function createSparkle(e) {
+    const sparkle = document.createElement("div");
+    sparkle.className = "sparkle";
+    sparkle.style.left = (e.touches ? e.touches[0].pageX : e.pageX) + "px";
+    sparkle.style.top = (e.touches ? e.touches[0].pageY : e.pageY) + "px";
+    document.body.appendChild(sparkle);
+    setTimeout(() => sparkle.remove(), 600);
+}
 
-</body>
-</html>
+document.addEventListener("mousemove", createSparkle);
+document.addEventListener("touchmove", createSparkle);
+
+// Floating Hearts
+setInterval
