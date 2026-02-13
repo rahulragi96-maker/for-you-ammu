@@ -45,7 +45,7 @@ h1 {
 
 .button-wrapper {
     position: relative;
-    height: 120px;
+    height: 160px;
 }
 
 button {
@@ -61,61 +61,16 @@ button {
 #yesBtn {
     background-color: #ff4da6;
     color: white;
-    margin-right: 20px;
-    transform: scale(1);
+    position: absolute;
+    left: 0;
 }
 
 #noBtn {
     background-color: white;
     color: #ff4da6;
     position: absolute;
-    left: 180px;
-}
-
-/* Popup */
-.popup {
-    position: fixed;
-    top: 20px;
-    background: white;
-    color: #ff4da6;
-    padding: 10px 20px;
-    border-radius: 20px;
-    font-weight: bold;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-    animation: fadeOut 1.5s forwards;
-}
-
-@keyframes fadeOut {
-    0% { opacity: 1; }
-    100% { opacity: 0; transform: translateY(-20px); }
-}
-
-/* Sparkle */
-.sparkle {
-    position: absolute;
-    width: 6px;
-    height: 6px;
-    background: white;
-    border-radius: 50%;
-    pointer-events: none;
-    animation: sparkleFade 0.6s linear forwards;
-}
-
-@keyframes sparkleFade {
-    0% { opacity: 1; transform: scale(1); }
-    100% { opacity: 0; transform: scale(2); }
-}
-
-/* Floating Hearts */
-.heart {
-    position: absolute;
-    color: rgba(255,255,255,0.8);
-    animation: floatUp 6s linear infinite;
-}
-
-@keyframes floatUp {
-    0% { transform: translateY(100vh) scale(0.6); opacity: 1; }
-    100% { transform: translateY(-10vh) scale(1.4); opacity: 0; }
+    left: 200px;
+    opacity: 1;
 }
 
 /* Final Screen */
@@ -125,15 +80,37 @@ button {
     display: flex;
     justify-content: center;
     align-items: center;
+    text-align: center;
     background: linear-gradient(135deg, #ff9a9e, #fad0c4);
     color: white;
     font-size: clamp(1.5rem, 4vw, 2.5rem);
     padding: 20px;
+    z-index: 2;
+}
+
+/* Floating Image */
+.floating-image {
+    position: fixed;
+    width: 220px;
+    opacity: 0.25;
+    z-index: 1;
+    animation: floatAround 20s linear infinite alternate;
+}
+
+@keyframes floatAround {
+    0%   { top: 10%; left: 10%; transform: rotate(0deg); }
+    25%  { top: 60%; left: 70%; transform: rotate(90deg); }
+    50%  { top: 30%; left: 40%; transform: rotate(180deg); }
+    75%  { top: 70%; left: 20%; transform: rotate(270deg); }
+    100% { top: 20%; left: 80%; transform: rotate(360deg); }
 }
 </style>
 </head>
 
 <body>
+
+<audio id="bgMusic" src="bgmusic.mp3" loop></audio>
+<audio id="drumroll" src="drumroll.mp3"></audio>
 
 <div class="container">
     <h1>Will you be my Ammu forever? 💖</h1>
@@ -144,107 +121,70 @@ button {
     </div>
 </div>
 
-<!-- Cute Sound -->
-<audio id="popSound" src="https://assets.mixkit.co/sfx/preview/mixkit-bubble-pop-up-alert-notification-2357.mp3"></audio>
-
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <script>
-const noBtn = document.getElementById("noBtn");
 const yesBtn = document.getElementById("yesBtn");
-const popSound = document.getElementById("popSound");
+const noBtn = document.getElementById("noBtn");
+const bgMusic = document.getElementById("bgMusic");
+const drumroll = document.getElementById("drumroll");
 
-let yesScale = 1;
-let noScale = 1;
+let noAttempts = 0;
 
-// Move NO + effects
-function moveNoButton() {
+/* Start background music on first tap/click */
+document.addEventListener("click", () => {
+    bgMusic.play();
+}, { once: true });
 
-    popSound.currentTime = 0;
-    popSound.play();
+/* YES chases cursor/finger */
+function chaseYes(e) {
+    const x = e.touches ? e.touches[0].pageX : e.pageX;
+    const y = e.touches ? e.touches[0].pageY : e.pageY;
 
-    // Grow YES
-    yesScale += 0.15;
-    yesBtn.style.transform = `scale(${yesScale})`;
-
-    // Shrink NO
-    noScale -= 0.05;
-    if (noScale < 0.4) noScale = 0.4;
-    noBtn.style.transform = `scale(${noScale})`;
-
-    // Move NO randomly
-    const wrapper = document.querySelector(".button-wrapper");
-    const maxX = wrapper.offsetWidth - 120;
-    const maxY = wrapper.offsetHeight - 50;
-
-    const x = Math.random() * maxX;
-    const y = Math.random() * maxY;
-
-    noBtn.style.left = x + "px";
-    noBtn.style.top = y + "px";
-
-    showPopup();
+    yesBtn.style.left = (x - 60) + "px";
+    yesBtn.style.top = (y - 20) + "px";
 }
 
-noBtn.addEventListener("mouseover", moveNoButton);
-noBtn.addEventListener("touchstart", moveNoButton);
+document.addEventListener("mousemove", chaseYes);
+document.addEventListener("touchmove", chaseYes);
 
-// Fake popup
-function showPopup() {
-    const popup = document.createElement("div");
-    popup.className = "popup";
-    popup.innerText = "Are you sure? 😏";
-    document.body.appendChild(popup);
+/* NO fades away */
+function handleNo() {
+    noAttempts++;
+    noBtn.style.opacity = 1 - (noAttempts * 0.2);
 
-    setTimeout(() => popup.remove(), 1500);
+    if (noAttempts >= 5) {
+        noBtn.style.display = "none";
+    }
 }
 
-// YES click
+noBtn.addEventListener("mouseover", handleNo);
+noBtn.addEventListener("touchstart", handleNo);
+
+/* YES Click */
 yesBtn.addEventListener("click", () => {
-    confetti({
-        particleCount: 300,
-        spread: 160,
-        origin: { y: 0.6 }
-    });
+
+    if (navigator.vibrate) navigator.vibrate([200,100,200]);
+
+    drumroll.play();
 
     setTimeout(() => {
+
+        confetti({
+            particleCount: 400,
+            spread: 180,
+            origin: { y: 0.6 }
+        });
+
         document.body.innerHTML = `
             <div class="final-screen">
                 You just made me the happiest person alive, Ammu 💘✨
             </div>
+            <img src="love.png" class="floating-image">
         `;
-    }, 1000);
+
+    }, 2000);
 });
-
-// Sparkles
-function createSparkle(e) {
-    const sparkle = document.createElement("div");
-    sparkle.className = "sparkle";
-
-    const x = e.touches ? e.touches[0].pageX : e.pageX;
-    const y = e.touches ? e.touches[0].pageY : e.pageY;
-
-    sparkle.style.left = x + "px";
-    sparkle.style.top = y + "px";
-
-    document.body.appendChild(sparkle);
-    setTimeout(() => sparkle.remove(), 600);
-}
-
-document.addEventListener("mousemove", createSparkle);
-document.addEventListener("touchmove", createSparkle);
-
-// Floating Hearts
-setInterval(() => {
-    const heart = document.createElement("div");
-    heart.className = "heart";
-    heart.innerHTML = "💖";
-    heart.style.left = Math.random() * 100 + "vw";
-    heart.style.fontSize = (Math.random() * 18 + 12) + "px";
-    heart.style.animationDuration = (Math.random() * 3 + 3) + "s";
-    document.body.appendChild(heart);
-    setTimeout(() => heart.remove(), 6000);
-}, 700);
 </script>
 
 </body>
