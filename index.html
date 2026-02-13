@@ -55,13 +55,11 @@ button {
 #yesBtn {
     background-color: #ff4da6;
     color: white;
-    transform: scale(1);
 }
 
 #noBtn {
     background-color: white;
     color: #ff4da6;
-    transform: scale(1);
 }
 
 /* Popup */
@@ -100,21 +98,16 @@ button {
     z-index: 3;
 }
 
-/* Floating Image */
+/* CENTERED IMAGE BEHIND TEXT */
 .floating-image {
     position: fixed;
-    width: 220px;
-    opacity: 0.25;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 300px;
+    opacity: 0.18;
     z-index: 1;
-    animation: floatAround 20s linear infinite alternate;
-}
-
-@keyframes floatAround {
-    0%   { top: 10%; left: 10%; transform: rotate(0deg); }
-    25%  { top: 60%; left: 70%; transform: rotate(90deg); }
-    50%  { top: 30%; left: 40%; transform: rotate(180deg); }
-    75%  { top: 70%; left: 20%; transform: rotate(270deg); }
-    100% { top: 20%; left: 80%; transform: rotate(360deg); }
+    pointer-events: none;
 }
 
 /* Sparkles */
@@ -173,13 +166,13 @@ let scaleNo = 1;
 
 /* Start background music on first tap */
 document.addEventListener("click", () => {
-    bgMusic.play();
+    bgMusic.play().catch(() => {});
 }, { once: true });
 
-/* NO impossible to touch */
+/* NO Button Escape */
 function escapeNo() {
     popSound.currentTime = 0;
-    popSound.play();
+    popSound.play().catch(() => {});
 
     scaleYes += 0.15;
     scaleNo -= 0.1;
@@ -212,23 +205,26 @@ yesBtn.addEventListener("click", () => {
     if (navigator.vibrate) navigator.vibrate([200,100,200]);
 
     drumroll.currentTime = 0;
-    drumroll.play();
+    drumroll.play().catch(() => {});
 
     bgMusic.volume = 0.3;
 
     document.querySelector(".container").style.display = "none";
 
+    /* Create centered background image */
+    const img = document.createElement("img");
+    img.src = "love.png";   // 🔥 Make sure this file exists
+    img.className = "floating-image";
+    document.body.appendChild(img);
+
+    /* Create final message */
     const finalScreen = document.createElement("div");
     finalScreen.className = "final-screen";
     finalScreen.innerHTML =
         "You just made me the happiest person alive, Ammu 💘✨";
     document.body.appendChild(finalScreen);
 
-    const img = document.createElement("img");
-    img.src = "love.png";
-    img.className = "floating-image";
-    document.body.appendChild(img);
-
+    /* Confetti */
     setTimeout(() => {
         confetti({
             particleCount: 400,
